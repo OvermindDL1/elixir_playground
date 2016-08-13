@@ -1,6 +1,58 @@
 defmodule MyMap do
 
   @doc """
+  iex> MyMap.map_tco_over fn(i) -> i + 1 end, [1, 2, 3, 4]
+  [2, 3, 4, 5]
+  """
+  def map_tco_over(_fun, []), do: []
+  def map_tco_over(fun, list) do
+    do_map_tco_over(fun, list, [])
+  end
+
+  defp do_map_tco_over(fun, [head], acc) do
+    :lists.reverse(acc, [fun.(head)])
+  end
+  defp do_map_tco_over(fun, [head | tail], acc) do
+    do_map_tco_over(fun, tail, [fun.(head) | acc])
+  end
+
+  @doc """
+  iex> MyMap.map_tco_reversed_over fn(i) -> i + 1 end, [1, 2, 3, 4]
+  [5, 4, 3, 2]
+  """
+  def map_tco_reversed_over(_fun, []), do: []
+  def map_tco_reversed_over(fun, list) do
+    do_map_tco_reversed_over(fun, list, [])
+  end
+
+  defp do_map_tco_reversed_over(fun, [head], acc) do
+    [fun.(head)|acc]
+  end
+  defp do_map_tco_reversed_over(fun, [head | tail], acc) do
+    do_map_tco_reversed_over(fun, tail, [fun.(head) | acc])
+  end
+
+  @doc """
+  iex> MyMap.map_over fn(i) -> i + 1 end, [1, 2, 3, 4]
+  [2, 3, 4, 5]
+  """
+  def map_over(_fun, []), do: []
+  def map_over(fun, [head|tail]) do
+    [fun.(head) | map_over(fun, tail)]
+  end
+
+  @doc """
+  iex> MyMap.erlang_map fn(i) -> i + 1 end, [1, 2, 3, 4]
+  [2, 3, 4, 5]
+  """
+  def erlang_map(fun, list) do
+    :lists.map(fun, list)
+  end
+
+
+
+
+  @doc """
   iex> MyMap.map_tco [1, 2, 3, 4], fn(i) -> i + 1 end
   [2, 3, 4, 5]
   """

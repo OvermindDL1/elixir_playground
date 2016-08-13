@@ -1,7 +1,8 @@
 list = Enum.to_list(1..10_000)
-map_fun = fn(i) -> i + 1 end
+# map_fun = fn(i) -> i + 1 end
+map_fun = &Kernel.+(1, &1)
 
-Benchee.run %{time: 10, warmup: 10}, [
+Benchee.run %{time: 10, warmup: 10, parallel: 1}, [
   {"map tail-recursive with ++",
    fn -> MyMap.map_tco_concat(list, map_fun) end},
   {"map with TCO reverse",
@@ -13,29 +14,54 @@ Benchee.run %{time: 10, warmup: 10}, [
   {"map with TCO new arg order",
    fn -> MyMap.map_tco_arg_order(list, map_fun) end},
   {"map TCO no reverse",
-   fn -> MyMap.map_tco_no_reverse(list, map_fun) end}
+   fn -> MyMap.map_tco_no_reverse(list, map_fun) end},
+  {"map TCO overmind",
+   fn -> MyMap.map_tco_over(map_fun, list) end},
+  {"map TCO reversed overmind",
+   fn -> MyMap.map_tco_reversed_over(map_fun, list) end},
+  {"map overmind",
+   fn -> MyMap.map_over(map_fun, list) end},
+  {"map erlang",
+   fn -> :lists.map(map_fun, list) end}
 ]
 
-# tobi@happy ~/github/elixir_playground $ mix run bench/tco_blog_post_detailed.exs 
-# Benchmarking map tail-recursive with ++...
-# Benchmarking map TCO no reverse...
-# Benchmarking stdlib map...
-# Benchmarking map with TCO new arg order...
-# Benchmarking map simple without TCO...
-# Benchmarking map with TCO reverse...
+# Benchmark suite executing with the following configuration:
+# warmup: 10.0s
+# time: 10.0s
+# parallel: 1
+# Estimated total run time: 200.0s
 #
-# Name                                    ips        average    deviation         median
-# map simple without TCO              6015.31       166.24μs     (±6.88%)       163.00μs
-# stdlib map                          5815.97       171.94μs    (±11.29%)       163.00μs
-# map with TCO new arg order          5761.46       173.57μs    (±10.24%)       167.00μs
-# map TCO no reverse                  5566.08       179.66μs     (±6.39%)       177.00μs
-# map with TCO reverse                5262.89       190.01μs     (±9.98%)       182.00μs
-# map tail-recursive with ++             8.66    115494.33μs     (±2.86%)    113537.00μs
+# Benchmarking map TCO no reverse...
+# Benchmarking map TCO overmind...
+# Benchmarking map TCO reversed overmind...
+# Benchmarking map erlang...
+# Benchmarking map overmind...
+# Benchmarking map simple without TCO...
+# Benchmarking map tail-recursive with ++...
+# Benchmarking map with TCO new arg order...
+# Benchmarking map with TCO reverse...
+# Benchmarking stdlib map...
+#
+# Name                                 ips        average    deviation         median
+# map simple without TCO           3006.87       332.57μs     (±5.75%)       338.00μs
+# stdlib map                       2931.59       341.11μs     (±5.55%)       345.00μs
+# map TCO no reverse               2851.14       350.74μs     (±5.73%)       359.00μs
+# map TCO reversed overmind        2738.95       365.10μs     (±5.72%)       374.00μs
+# map with TCO new arg order       2729.02       366.43μs    (±12.44%)       368.00μs
+# map erlang                       2649.13       377.48μs     (±5.57%)       386.00μs
+# map overmind                     2584.41       386.94μs     (±5.62%)       395.00μs
+# map with TCO reverse             2420.59       413.12μs    (±11.16%)       415.00μs
+# map TCO overmind                 2315.96       431.79μs    (±24.96%)       394.00μs
+# map tail-recursive with ++          4.79    208636.11μs     (±1.07%)    208862.00μs
 #
 # Comparison:
-# map simple without TCO              6015.31
-# stdlib map                          5815.97 - 1.03x slower
-# map with TCO new arg order          5761.46 - 1.04x slower
-# map TCO no reverse                  5566.08 - 1.08x slower
-# map with TCO reverse                5262.89 - 1.14x slower
-# map tail-recursive with ++             8.66 - 694.73x slower
+# map simple without TCO           3006.87
+# stdlib map                       2931.59 - 1.03x slower
+# map TCO no reverse               2851.14 - 1.05x slower
+# map TCO reversed overmind        2738.95 - 1.10x slower
+# map with TCO new arg order       2729.02 - 1.10x slower
+# map erlang                       2649.13 - 1.14x slower
+# map overmind                     2584.41 - 1.16x slower
+# map with TCO reverse             2420.59 - 1.24x slower
+# map TCO overmind                 2315.96 - 1.30x slower
+# map tail-recursive with ++          4.79 - 627.34x slower
