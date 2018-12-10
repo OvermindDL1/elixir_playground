@@ -3,7 +3,7 @@ defmodule MyFail do
   alias A.B
 
   def method do
-    B.nonexistebt
+    B.nonexistent
   end
 
 end
